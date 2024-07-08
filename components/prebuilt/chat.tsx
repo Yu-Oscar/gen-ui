@@ -69,14 +69,17 @@ export default function Chat() {
     });
 
     newElements.push(
-      <div className="flex flex-col w-full gap-1 mt-auto" key={history.length}>
+      <li>
         {selectedFile && <FileUploadMessage file={selectedFile} />}
         <HumanMessageText content={input} />
-        <div className="flex flex-col gap-1 w-full max-w-fit mr-auto">
-          {element.ui}
-        </div>
-      </div>,
+      </li>
     );
+
+    newElements.push(
+      <li className="flex flex-col gap-1 w-full max-w-fit mr-auto">
+        {element.ui}
+      </li>
+  );
 
     // consume the value stream to obtain the final value
     // after which we can append to our chat history state
