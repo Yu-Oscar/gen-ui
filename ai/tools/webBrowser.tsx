@@ -1,6 +1,6 @@
 import { DallEAPIWrapper } from "@langchain/openai";
 import { z } from "zod";
-import { DallE, DallELoading } from "@/components/prebuilt/dalle";
+import { Web, WebLoading } from "@/components/prebuilt/web";
 import { createRunnableUI } from "@/utils/server";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
@@ -34,19 +34,19 @@ export const webBrowserTool = new DynamicStructuredTool({
   schema: webBrowserSchema,
   func: async (input, config) => {
     const stream = await createRunnableUI(config, 
-      <DallELoading />
+      <WebLoading />
     );
     try {
       const data = await webBrowserData(input);
       stream.done(
-        <span>{data.result}</span>
+        <Web {...data} />
       );
       return JSON.stringify(data, null, 2);
     } catch (error) {
       stream.done(
         <span>error</span>
       );
-      return JSON.stringify({ error: error.message }, null, 2);
+      return JSON.stringify({ error: error }, null, 2);
     }
   },
 });

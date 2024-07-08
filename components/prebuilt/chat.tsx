@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, use } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { EndpointsContext } from "@/app/agent";
@@ -43,18 +43,19 @@ export default function Chat() {
   const [submitLock, setSubmitLock] = useState(false);
 
   async function onSubmit(input: string) {
+    if (submitLock || input.trim() === "") {
+      return;
+    }
+
+    setSubmitLock(true);
+
     const newElements = [...elements];
     let base64File: string | undefined = undefined;
     let fileExtension = selectedFile?.type.split("/")[1];
     if (selectedFile) {
       base64File = await convertFileToBase64(selectedFile);
     }
-    console.log("submit");
-    if(submitLock) {
-      return;
-    }
-    setSubmitLock(true)
-    console.log("submit lock");
+
     const element = await actions.agent({
       input,
       chat_history: history,
@@ -102,10 +103,8 @@ export default function Chat() {
         }
       }
     })().then(() => {
-      console.log("done");
       setSubmitLock(false);
-      console.log("submit unlock");
-    });;
+    });
 
     setElements(newElements);
     setInput("");
@@ -113,7 +112,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="w-full h-screen max-h-dvh flex flex-col gap-4 mx-autorounded-lg p-3 shadow-sm">
+    <div className="w-full h-screen max-h-dvh flex flex-col gap-4 mx-auto rounded-lg p-3 shadow-sm">
       <header className="p-4">
         <h1 className="text-lg font-semibold">ChatHKT</h1>
       </header>
@@ -132,19 +131,20 @@ export default function Chat() {
       >
         
         <label className="flex items-center cursor-pointer">
-            <Image />
-            <Input
-              id="image"
-              type="file"
-              accept="image/*"
-              className="w-0 p-0 m-0"
-              onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  setSelectedFile(e.target.files[0]);
-                }
-              }}
-            />
-          </label>
+          <Image />
+          <Input
+            disabled={submitLock}
+            id="image"
+            type="file"
+            accept="image/*"
+            className="w-0 p-0 m-0"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                setSelectedFile(e.target.files[0]);
+              }
+            }}
+          />
+        </label>
         <Input
           placeholder="Enter your question"
           value={input}
@@ -152,7 +152,9 @@ export default function Chat() {
           className="rounded-xl"
         />
         
-        <Button type="submit" className="rounded-xl" disabled={submitLock}>{submitLock ? "..." : "Submit"}</Button>
+        <Button type="submit" className="rounded-xl" disabled={submitLock || input.trim() === ""}>
+          {submitLock ? "..." : "Submit"}
+        </Button>
       </form>
     </div>
   );
