@@ -167,7 +167,7 @@ export default function Chat() {
                   }}
                 >
                   GPT-3.5
-                  <span className="block text-xs text-gray-400">Great for everyday tasks</span>
+                  <span className="block text-xs text-gray-400">Great for everyday tasks     </span>
                 </button>
               </div>
             </div>
