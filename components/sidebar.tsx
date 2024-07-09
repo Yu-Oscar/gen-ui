@@ -32,7 +32,6 @@ export function Sidebar() {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
     console.log(isOpen);
-    window.location.reload(); // Refresh the page
   };
 
   return (
