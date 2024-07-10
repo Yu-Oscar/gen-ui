@@ -1,4 +1,6 @@
 import Markdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 export interface MessageTextProps {
   content: string;
@@ -14,7 +16,27 @@ export function AIMessageText(props: MessageTextProps) {
     <div className="flex flex-row mb-4 mr-auto">
       <div className="rounded-2xl py-2 px-4 bg-blue-500 shadow-md flex">
         <p className="text-primary">
-          <Markdown>{props.content}</Markdown>
+        <Markdown
+          children={props.content}
+          components={{
+            code(props) {
+              const {children, className, node, ...rest} = props
+              const match = /language-(\w+)/.exec(className || '')
+              return match ? (
+                <SyntaxHighlighter
+                  children={String(children).replace(/\n$/, '')}
+                  language={match[1]}
+                  style={customStyle}
+                />
+              ) : (
+                <code {...rest} className={className}>
+                  {children}
+                </code>
+              )
+            }
+          }}
+        />
+          {/* <Markdown>{props.content}</Markdown> */}
         </p>
       </div>
     </div>
@@ -37,3 +59,50 @@ export function HumanMessageText(props: MessageTextProps) {
     </div>
   );
 }
+
+const customStyle = {
+  'code[class*="language-"]': {
+    color: '#f8f8f2',
+    fontSize: '1em',
+    lineHeight: '1.5',
+    textShadow: 'none',
+    borderRadius: '8px',
+    padding: '1em',
+  },
+  'pre[class*="language-"]': {
+    background: '#2d2d2d',
+    border: '1px solid #444',
+    borderRadius: '8px',
+    padding: '1em',
+    textShadow: 'none',
+    overflow: 'auto',
+  },
+  'pre[class*="language-"]::-webkit-scrollbar': {
+    width: '0.4em',
+  },
+  'pre[class*="language-"]::-webkit-scrollbar-thumb': {
+    backgroundColor: '#888',
+    outline: '1px solid slategrey',
+  },
+  'comment': { color: '#6a9955' },
+  'keyword': { color: '#569cd6' },
+  'string': { color: '#d69d85' },
+  'operator': { color: '#c586c0' },
+  'function': { color: '#dcdcaa' },
+  'variable': { color: '#9cdcfe' },
+  'number': { color: '#b5cea8' },
+  'builtin': { color: '#dcdcaa' },
+  'class-name': { color: '#4ec9b0' },
+  'punctuation': { color: '#f8f8f2' },
+  'attr-name': { color: '#9cdcfe' },
+  'tag': { color: '#569cd6' },
+  'property': { color: '#c586c0' },
+  'selector': { color: '#d7ba7d' },
+  'constant': { color: '#4ec9b0' },
+  'char': { color: '#d7ba7d' },
+  'boolean': { color: '#569cd6' },
+  'atrule': { color: '#c586c0' },
+  'important': { color: '#c586c0' },
+  'regex': { color: '#d16969' },
+  'entity': { color: '#d7ba7d' },
+};
