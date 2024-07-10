@@ -67,7 +67,6 @@ const customStyle = {
     lineHeight: '1.5',
     textShadow: 'none',
     borderRadius: '8px',
-    padding: '1em',
   },
   'pre[class*="language-"]': {
     background: '#2d2d2d',
