@@ -139,3 +139,12 @@
   width: 0px;
 }
 
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;     /* Firefox */
+}

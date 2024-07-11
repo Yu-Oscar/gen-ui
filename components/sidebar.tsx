@@ -37,7 +37,7 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        "h-screen bg-[#171717] text-white w-72 flex flex-col",
+        "h-screen bg-[#171717] text-white w-72 flex flex-col ",
         !isOpen && "w-max",
       )}
     >
@@ -59,7 +59,7 @@ export function Sidebar() {
       </div>
       {isOpen && (
         <>
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 overflow-y-auto custom-scrollbar hide-scrollbar">
             <Link
               onClick={() => setActive("ChatGPT")}
               href="/"

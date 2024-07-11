@@ -7,7 +7,7 @@ import { EndpointsContext } from "@/app/agent";
 import { useActions } from "@/utils/client";
 import { LocalContext } from "@/app/shared";
 import { HumanMessageText } from "./message";
-import { Paperclip, FileText, Image, Video } from "lucide-react";
+import { Paperclip, FileText, Image, Video, ArrowUp } from "lucide-react";
 
 export interface ChatProps {}
 
@@ -44,6 +44,8 @@ export default function Chat() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("ChatGPT 4o");
 
+  const ulRef = useRef<HTMLUListElement>(null);
+
   async function onSubmit(input: string) {
     if (submitLock || input.trim() === "") {
       return;
@@ -71,14 +73,14 @@ export default function Chat() {
     });
 
     newElements.push(
-      <li>
+      <li key={`user-${Date.now()}`}>
         {selectedFile && <FileUploadMessage file={selectedFile} />}
         <HumanMessageText content={input} />
       </li>
     );
 
     newElements.push(
-      <li className="flex flex-col gap-1 w-full max-w-fit mr-auto">
+      <li key={`agent-${Date.now()}`} className="flex flex-col gap-1 w-full max-w-fit mr-auto">
         {element.ui}
       </li>
     );
@@ -116,9 +118,27 @@ export default function Chat() {
     setSelectedFile(undefined);
   }
 
+  useEffect(() => {
+    if (ulRef.current) {
+      const observer = new MutationObserver(() => {
+        ulRef.current!.scrollTop = ulRef.current!.scrollHeight;
+      });
+
+      observer.observe(ulRef.current, {
+        childList: true,
+        subtree: true,
+      });
+
+      // Clean up the observer on component unmount
+      return () => {
+        observer.disconnect();
+      };
+    }
+  }, [ulRef]);
+
   return (
     <div className="w-full h-screen max-h-dvh flex flex-col gap-4 mx-auto rounded-lg p-3 shadow-sm">
-      <header className="p-4 relative">
+      <header className="px-4 relative">
         <div className="relative inline-block text-left">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -176,7 +196,9 @@ export default function Chat() {
       </header>
       
       <LocalContext.Provider value={onSubmit} >
-        <ul className="flex flex-col w-[80%] gap-1 mt-auto container overflow-y-auto">{elements}</ul>
+        <ul className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar" ref={ulRef}>
+          {elements}
+        </ul>
       </LocalContext.Provider>
       
       <form
@@ -211,7 +233,7 @@ export default function Chat() {
         />
         
         <Button type="submit" className="rounded-xl" disabled={submitLock || input.trim() === ""}>
-          {submitLock ? "..." : "Submit"}
+          <ArrowUp />
         </Button>
       </form>
     </div>
