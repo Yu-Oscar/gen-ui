@@ -8,6 +8,8 @@ import { useActions } from "@/utils/client";
 import { LocalContext } from "@/app/shared";
 import { HumanMessageText } from "./message";
 import { Paperclip, FileText, Image, Video, ArrowUp } from "lucide-react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export interface ChatProps {}
 
@@ -138,6 +140,16 @@ export default function Chat() {
 
   return (
     <div className="w-full h-screen max-h-dvh flex flex-col gap-4 mx-auto rounded-lg p-3 shadow-sm">
+      <ToastContainer 
+        autoClose={1000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        pauseOnHover
+        theme="dark"
+      />
       <header className="px-4 relative">
         <div className="relative inline-block text-left">
           <button
@@ -207,7 +219,7 @@ export default function Chat() {
           e.preventDefault();
           await onSubmit(input);
         }}
-        className="flex flex-row gap-2 container w-[80%] bg-transparent"
+        className="flex flex-row gap-2 container w-[80%] bg-transparent items-end"
       >
         
         <label className="flex items-center cursor-pointer">
@@ -221,16 +233,23 @@ export default function Chat() {
             onChange={(e) => {
               if (e.target.files && e.target.files.length > 0) {
                 setSelectedFile(e.target.files[0]);
+                toast.success("Image uploaded");
               }
             }}
           />
         </label>
+        <div className="w-full">
+        {selectedFile && (
+          <span className="ml-2 text-sm text-gray-500 mb-1">File is selected: {selectedFile.name}</span>
+        )}
         <Input
           placeholder="Enter your question"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           className="rounded-xl"
         />
+        </div>
+        
         
         <Button type="submit" className="rounded-xl" disabled={submitLock || input.trim() === ""}>
           <ArrowUp />
