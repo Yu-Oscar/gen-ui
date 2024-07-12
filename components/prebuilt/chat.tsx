@@ -7,9 +7,16 @@ import { EndpointsContext } from "@/app/agent";
 import { useActions } from "@/utils/client";
 import { LocalContext } from "@/app/shared";
 import { HumanMessageText } from "./message";
-import { Paperclip, FileText, Image, Video, ArrowUp } from "lucide-react";
+import { Paperclip, FileText, Image, Video, ArrowUp, ChevronDown, CheckCheck } from "lucide-react";
+import {
+  HamburgerMenuIcon,
+  DotFilledIcon,
+  CheckIcon,
+  ChevronRightIcon,
+} from '@radix-ui/react-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 export interface ChatProps {}
 
@@ -138,6 +145,8 @@ export default function Chat() {
     }
   }, [ulRef]);
 
+  const [model, setModel] = useState('GPT-4o');
+
   return (
     <div className="w-full h-screen max-h-dvh flex flex-col gap-4 mx-auto rounded-lg p-3 shadow-sm">
       <ToastContainer 
@@ -150,62 +159,40 @@ export default function Chat() {
         pauseOnHover
         theme="dark"
       />
-      <header className="px-4 relative">
-        <div className="relative inline-block text-left">
-          <button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-black text-white text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            id="options-menu"
-            aria-haspopup="true"
-            aria-expanded="true"
-          >
-            {selectedOption}
-            <svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
 
-          {dropdownOpen && (
-            <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-black ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-              <div className="py-1" role="none">
-                <button
-                  className="block px-4 py-2 text-sm text-white hover:bg-gray-700"
-                  role="menuitem"
-                  onClick={() => {
-                    setSelectedOption("GPT-4o");
-                    setDropdownOpen(false);
-                  }}
-                >
-                  GPT-4o
-                  <span className="block text-xs text-gray-400">Newest and most advanced model</span>
-                </button>
-                <button
-                  className="block px-4 py-2 text-sm text-white hover:bg-gray-700"
-                  role="menuitem"
-                  onClick={() => {
-                    setSelectedOption("GPT-4");
-                    setDropdownOpen(false);
-                  }}
-                >
-                  GPT-4
-                  <span className="block text-xs text-gray-400">Advanced model for complex tasks</span>
-                </button>
-                <button
-                  className="block px-4 py-2 text-sm text-white hover:bg-gray-700"
-                  role="menuitem"
-                  onClick={() => {
-                    setSelectedOption("GPT-3.5");
-                    setDropdownOpen(false);
-                  }}
-                >
-                  GPT-3.5
-                  <span className="block text-xs text-gray-400">Great for everyday tasks     </span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
+
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild className="w-max ml-5 text-xl">
+          <Button
+          className="flex flex-row text-zinc-400 justify-center items-center px-4 py-1  hover:text-zinc-400 hover:bg-zinc-700 focus:bg-zinc-700 rounded-[6px] gap-x-2 bg-transparent">
+            <span>{model}</span>
+            <ChevronDown/>
+          </Button>
+        </DropdownMenu.Trigger>
+
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content className="w-max bg-zinc-700 rounded-[6px] py-2 text-md" sideOffset={0} align="start">
+            <DropdownMenu.RadioGroup 
+              value={model} 
+              onValueChange={setModel}
+              className="px-4 py-1"
+            >
+              <DropdownMenu.RadioItem className="flex items-center p-3 cursor-pointer hover:bg-zinc-500 rounded-[6px]" value="GPT-4o">
+                <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator mr-10">
+                  <CheckCheck className="w-5 h-5"/>
+                </DropdownMenu.ItemIndicator>
+                <span className="ml-auto">GPT-4o</span>
+              </DropdownMenu.RadioItem>
+              <DropdownMenu.RadioItem disabled className="flex items-center p-3 cursor-not-allowed hover:bg-zinc-500 rounded-[6px] gap-x-4" value="code">
+                <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator">
+                  <CheckCheck className="w-5 h-5"/>
+                </DropdownMenu.ItemIndicator>
+                <span className="ml-auto">Code</span>
+              </DropdownMenu.RadioItem>
+            </DropdownMenu.RadioGroup>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
       
       <LocalContext.Provider value={onSubmit} >
         <ul className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar" ref={ulRef}>
