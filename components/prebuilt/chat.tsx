@@ -17,6 +17,7 @@ import {
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import ModelDropdown from "../ui/ModelDropdown";
 
 export interface ChatProps {}
 
@@ -161,38 +162,7 @@ export default function Chat() {
       />
 
 
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild className="w-max ml-5 text-xl">
-          <Button
-          className="flex flex-row text-zinc-400 justify-center items-center px-4 py-1  hover:text-zinc-400 hover:bg-zinc-700 focus:bg-zinc-700 rounded-[6px] gap-x-2 bg-transparent">
-            <span>{model}</span>
-            <ChevronDown/>
-          </Button>
-        </DropdownMenu.Trigger>
-
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content className="w-max bg-zinc-700 rounded-[6px] py-2 text-md" sideOffset={0} align="start">
-            <DropdownMenu.RadioGroup 
-              value={model} 
-              onValueChange={setModel}
-              className="px-4 py-1"
-            >
-              <DropdownMenu.RadioItem className="flex items-center p-3 cursor-pointer hover:bg-zinc-500 rounded-[6px]" value="GPT-4o">
-                <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator mr-10">
-                  <CheckCheck className="w-5 h-5"/>
-                </DropdownMenu.ItemIndicator>
-                <span className="ml-auto">GPT-4o</span>
-              </DropdownMenu.RadioItem>
-              <DropdownMenu.RadioItem disabled className="flex items-center p-3 cursor-not-allowed hover:bg-zinc-500 rounded-[6px] gap-x-4" value="code">
-                <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator">
-                  <CheckCheck className="w-5 h-5"/>
-                </DropdownMenu.ItemIndicator>
-                <span className="ml-auto">Code</span>
-              </DropdownMenu.RadioItem>
-            </DropdownMenu.RadioGroup>
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
+      <ModelDropdown model={model} setModel={setModel} />
       
       <LocalContext.Provider value={onSubmit} >
         <ul className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar" ref={ulRef}>
