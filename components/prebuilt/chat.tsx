@@ -163,55 +163,60 @@ export default function Chat() {
 
 
       <ModelDropdown model={model} setModel={setModel} />
-      
-      <LocalContext.Provider value={onSubmit} >
-        <ul className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar" ref={ulRef}>
-          {elements}
-        </ul>
-      </LocalContext.Provider>
-      
-      <form
-        onSubmit={async (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          await onSubmit(input);
-        }}
-        className="flex flex-row gap-2 container w-[80%] bg-transparent items-end"
-      >
+      {model === 'GPT-4o' && (<>
+        <LocalContext.Provider value={onSubmit} >
+          <ul className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar" ref={ulRef}>
+            {elements}
+          </ul>
+        </LocalContext.Provider>
         
-        <label className="flex items-center cursor-pointer">
-          <Image />
+        <form
+          onSubmit={async (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            await onSubmit(input);
+          }}
+          className="flex flex-row gap-2 container w-[80%] bg-transparent items-end"
+        >
+          
+          <label className="flex items-center cursor-pointer">
+            <Image />
+            <Input
+              disabled={submitLock}
+              id="image"
+              type="file"
+              accept="image/*"
+              className="w-0 p-0 m-0"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  setSelectedFile(e.target.files[0]);
+                  toast.success("Image uploaded");
+                }
+              }}
+            />
+          </label>
+          <div className="w-full">
+          {selectedFile && (
+            <span className="ml-2 text-sm text-gray-500 mb-1">File is selected: {selectedFile.name}</span>
+          )}
           <Input
-            disabled={submitLock}
-            id="image"
-            type="file"
-            accept="image/*"
-            className="w-0 p-0 m-0"
-            onChange={(e) => {
-              if (e.target.files && e.target.files.length > 0) {
-                setSelectedFile(e.target.files[0]);
-                toast.success("Image uploaded");
-              }
-            }}
+            placeholder="Enter your question"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="rounded-xl"
           />
-        </label>
-        <div className="w-full">
-        {selectedFile && (
-          <span className="ml-2 text-sm text-gray-500 mb-1">File is selected: {selectedFile.name}</span>
-        )}
-        <Input
-          placeholder="Enter your question"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="rounded-xl"
-        />
-        </div>
-        
-        
-        <Button type="submit" className="rounded-xl" disabled={submitLock || input.trim() === ""}>
-          <ArrowUp />
-        </Button>
-      </form>
+          </div>
+          
+          
+          <Button type="submit" className="rounded-xl" disabled={submitLock || input.trim() === ""}>
+            <ArrowUp />
+          </Button>
+        </form>
+      </>)}
+      
+      {model === 'code' && (<>
+      
+      </>)}
     </div>
   );
 }
