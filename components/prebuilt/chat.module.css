@@ -60,6 +60,8 @@
   align-self: flex-start;
   border-radius: 15px;
   max-width: 80%;
+  color: #000;
+  /* background-color: #3B82F6; */
   overflow-wrap: break-word;
 }
 
@@ -72,7 +74,7 @@
 .userMessage {
   align-self: flex-end;
   color: #fff;
-  background-color: #000;
+  background-color: #94A3B8;
 }
 
 .assistantMessage {

@@ -289,7 +289,7 @@ const CodeChat = ({
            <label className="flex items-center cursor-pointer">
             <Image />
             <Input
-              // disabled={submitLock}
+              disabled={inputDisabled}
               id="image"
               type="file"
               accept="image/*"
