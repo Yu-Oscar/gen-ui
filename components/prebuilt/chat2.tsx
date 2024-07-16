@@ -7,6 +7,10 @@ import Markdown from "react-markdown";
 // @ts-expect-error - no types for this yet
 import { AssistantStreamEvent } from "openai/resources/beta/assistants/assistants";
 import { RequiredActionFunctionToolCall } from "openai/resources/beta/threads/runs/runs";
+import { LocalContext } from "@/app/shared";
+import { Image, ArrowUp  } from "lucide-react";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
 type MessageProps = {
   role: "user" | "assistant" | "code";
@@ -69,16 +73,17 @@ const Message = ({ role, text }: MessageProps) => {
   }
 };
 
-const Chat = ({
+const CodeChat = ({
   functionCallHandler = () => Promise.resolve(""), // default to return empty string
 }: ChatProps) => {
   const [userInput, setUserInput] = useState<string>("");
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [inputDisabled, setInputDisabled] = useState<boolean>(false);
   const [threadId, setThreadId] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File>();
 
   // automatically scroll to bottom of chat
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesEndRef = useRef<HTMLUListElement | null>(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -268,34 +273,53 @@ const Chat = ({
   };
 
   return (
-    <div className={styles.chatContainer}>
-      <div className={styles.messages}>
-        {messages.map((msg, index) => (
+<>
+      <LocalContext.Provider value={(value : string ) =>null} >
+          <ul className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar" ref={messagesEndRef}>
+          {messages.map((msg, index) => (
           <Message key={index} role={msg.role} text={msg.text} />
         ))}
-        <div ref={messagesEndRef} />
-      </div>
+          </ul>
+        </LocalContext.Provider>
       <form
+                className="flex flex-row gap-2 container w-[80%] bg-transparent items-end"
         onSubmit={handleSubmit}
-        className={`${styles.inputForm} ${styles.clearfix}`}
+        // className={`${styles.inputForm} ${styles.clearfix}`}
       >
-        <input
+           <label className="flex items-center cursor-pointer">
+            <Image />
+            <Input
+              // disabled={submitLock}
+              id="image"
+              type="file"
+              accept="image/*"
+              className="w-0 p-0 m-0"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  setSelectedFile(e.target.files[0]);
+                }
+              }}
+            />
+          </label>
+                  <div className="w-full">
+        <Input
+            className="rounded-xl"
           type="text"
-          className={styles.input}
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
           placeholder="Enter your question"
         />
-        <button
+        </div>
+        <Button
+        className="rounded-xl"
           type="submit"
-          className={styles.button}
           disabled={inputDisabled}
         >
-          Send
-        </button>
+            <ArrowUp />
+        </Button>
       </form>
-    </div>
+    </>
   );
 };
 
-export default Chat;
+export default CodeChat;

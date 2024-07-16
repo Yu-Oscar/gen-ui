@@ -7,16 +7,11 @@ import { EndpointsContext } from "@/app/agent";
 import { useActions } from "@/utils/client";
 import { LocalContext } from "@/app/shared";
 import { HumanMessageText } from "./message";
-import { Paperclip, FileText, Image, Video, ArrowUp, ChevronDown, CheckCheck } from "lucide-react";
-import {
-  HamburgerMenuIcon,
-  DotFilledIcon,
-  CheckIcon,
-  ChevronRightIcon,
-} from '@radix-ui/react-icons';
+import { Image, ArrowUp  } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import ModelDropdown from "../ui/ModelDropDown";
+import CodeChat from "./chat2";
 
 export interface ChatProps {}
 
@@ -50,8 +45,6 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [selectedFile, setSelectedFile] = useState<File>();
   const [submitLock, setSubmitLock] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("ChatGPT 4o");
 
   const ulRef = useRef<HTMLUListElement>(null);
 
@@ -160,88 +153,58 @@ export default function Chat() {
         theme="dark"
       />
 
-
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild className="w-max ml-5 text-xl">
-          <Button
-          className="flex flex-row text-zinc-400 justify-center items-center px-4 py-1  hover:text-zinc-400 hover:bg-zinc-700 focus:bg-zinc-700 rounded-[6px] gap-x-2 bg-transparent">
-            <span>{model}</span>
-            <ChevronDown/>
-          </Button>
-        </DropdownMenu.Trigger>
-
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content className="w-max bg-zinc-700 rounded-[6px] py-2 text-md" sideOffset={0} align="start">
-            <DropdownMenu.RadioGroup 
-              value={model} 
-              onValueChange={setModel}
-              className="px-4 py-1"
-            >
-              <DropdownMenu.RadioItem className="flex items-center p-3 cursor-pointer hover:bg-zinc-500 rounded-[6px]" value="GPT-4o">
-                <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator mr-10">
-                  <CheckCheck className="w-5 h-5"/>
-                </DropdownMenu.ItemIndicator>
-                <span className="ml-auto">GPT-4o</span>
-              </DropdownMenu.RadioItem>
-              <DropdownMenu.RadioItem disabled className="flex items-center p-3 cursor-not-allowed hover:bg-zinc-500 rounded-[6px] gap-x-4" value="code">
-                <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator">
-                  <CheckCheck className="w-5 h-5"/>
-                </DropdownMenu.ItemIndicator>
-                <span className="ml-auto">Code</span>
-              </DropdownMenu.RadioItem>
-            </DropdownMenu.RadioGroup>
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
-      
-      <LocalContext.Provider value={onSubmit} >
-        <ul className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar" ref={ulRef}>
-          {elements}
-        </ul>
-      </LocalContext.Provider>
-      
-      <form
-        onSubmit={async (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          await onSubmit(input);
-        }}
-        className="flex flex-row gap-2 container w-[80%] bg-transparent items-end"
-      >
+      <ModelDropdown model={model} setModel={setModel} />
+      {model === 'GPT-4o' && (
+        <>
+        <LocalContext.Provider value={onSubmit} >
+          <ul className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar" ref={ulRef}>
+            {elements}
+          </ul>
+        </LocalContext.Provider>
         
-        <label className="flex items-center cursor-pointer">
-          <Image />
+        <form
+          onSubmit={async (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            await onSubmit(input);
+          }}
+          className="flex flex-row gap-2 container w-[80%] bg-transparent items-end"
+        >
+          <label className="flex items-center cursor-pointer">
+            <Image />
+            <Input
+              disabled={submitLock}
+              id="image"
+              type="file"
+              accept="image/*"
+              className="w-0 p-0 m-0"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  setSelectedFile(e.target.files[0]);
+                  toast.success("Image uploaded");
+                }
+              }}
+            />
+          </label>
+          <div className="w-full">
+          {selectedFile && (
+            <span className="ml-2 text-sm text-gray-500 mb-1">File is selected: {selectedFile.name}</span>
+          )}
           <Input
-            disabled={submitLock}
-            id="image"
-            type="file"
-            accept="image/*"
-            className="w-0 p-0 m-0"
-            onChange={(e) => {
-              if (e.target.files && e.target.files.length > 0) {
-                setSelectedFile(e.target.files[0]);
-                toast.success("Image uploaded");
-              }
-            }}
+            placeholder="Enter your question"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="rounded-xl"
           />
-        </label>
-        <div className="w-full">
-        {selectedFile && (
-          <span className="ml-2 text-sm text-gray-500 mb-1">File is selected: {selectedFile.name}</span>
-        )}
-        <Input
-          placeholder="Enter your question"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="rounded-xl"
-        />
-        </div>
-        
-        
-        <Button type="submit" className="rounded-xl" disabled={submitLock || input.trim() === ""}>
-          <ArrowUp />
-        </Button>
-      </form>
+          </div>
+          
+          <Button type="submit" className="rounded-xl" disabled={submitLock || input.trim() === ""}>
+            <ArrowUp />
+          </Button>
+        </form>
+      </>
+    )}
+      {model === 'code' && <CodeChat />}
     </div>
   );
 }
