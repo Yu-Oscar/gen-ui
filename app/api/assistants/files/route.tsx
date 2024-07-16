@@ -1,23 +1,33 @@
 import { assistantId } from "@/app/assistant-config";
 import { openai } from "@/app/openai";
+import { NextRequest } from "next/server";
 
 // upload file to assistant's vector store
-export async function POST(request) {
-  const formData = await request.formData(); // process file as FormData
-  const file = formData.get("file"); // retrieve the single file from FormData
-  const vectorStoreId = await getOrCreateVectorStore(); // get or create vector store
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData(); // process file as FormData
+    const file = formData.get("file") as File; // retrieve the single file from FormData and cast to File
+    const vectorStoreId = await getOrCreateVectorStore(); // get or create vector store
 
-  // upload using the file stream
-  const openaiFile = await openai.files.create({
-    file: file,
-    purpose: "assistants",
-  });
+    if (!file) {
+      throw new Error("No file uploaded");
+    }
 
-  // add file to vector store
-  await openai.beta.vectorStores.files.create(vectorStoreId, {
-    file_id: openaiFile.id,
-  });
-  return new Response();
+    // upload using the file stream
+    const openaiFile = await openai.files.create({
+      file: file,
+      purpose: "assistants",
+    });
+
+    // add file to vector store
+    await openai.beta.vectorStores.files.create(vectorStoreId, {
+      file_id: openaiFile.id,
+    });
+    return new Response("File uploaded successfully", { status: 200 });
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    return new Response("File upload failed", { status: 500 });
+  }
 }
 
 // list files in assistant's vector store
@@ -43,7 +53,7 @@ export async function GET() {
 }
 
 // delete file from assistant's vector store
-export async function DELETE(request) {
+export async function DELETE(request:NextRequest) {
   const body = await request.json();
   const fileId = body.fileId;
 
@@ -56,22 +66,29 @@ export async function DELETE(request) {
 /* Helper functions */
 
 const getOrCreateVectorStore = async () => {
-  const assistant = await openai.beta.assistants.retrieve(assistantId);
+  try {
+    const assistant = await openai.beta.assistants.retrieve(assistantId);
 
-  // if the assistant already has a vector store, return it
-  if (assistant.tool_resources?.file_search?.vector_store_ids?.length > 0) {
-    return assistant.tool_resources.file_search.vector_store_ids[0];
-  }
-  // otherwise, create a new vector store and attatch it to the assistant
-  const vectorStore = await openai.beta.vectorStores.create({
-    name: "sample-assistant-vector-store",
-  });
-  await openai.beta.assistants.update(assistantId, {
-    tool_resources: {
-      file_search: {
-        vector_store_ids: [vectorStore.id],
+    // Check if the assistant already has a vector store and return it
+    const vectorStoreIds = assistant.tool_resources?.file_search?.vector_store_ids ?? [];
+    if (vectorStoreIds.length > 0) {
+      return vectorStoreIds[0];
+    }
+
+    // Otherwise, create a new vector store and attach it to the assistant
+    const vectorStore = await openai.beta.vectorStores.create({
+      name: "sample-assistant-vector-store",
+    });
+    await openai.beta.assistants.update(assistantId, {
+      tool_resources: {
+        file_search: {
+          vector_store_ids: [vectorStore.id],
+        },
       },
-    },
-  });
-  return vectorStore.id;
+    });
+    return vectorStore.id;
+  } catch (error) {
+    console.error("Error getting or creating vector store:", error);
+    throw new Error("Failed to get or create vector store");
+  }
 };

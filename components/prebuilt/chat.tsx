@@ -10,7 +10,7 @@ import { HumanMessageText } from "./message";
 import { Image, ArrowUp  } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ModelDropdown from "../ui/ModelDropDown";
+import ModelDropdown from "../ui/ModelDropdown";
 import CodeChat from "./chat2";
 
 export interface ChatProps {}

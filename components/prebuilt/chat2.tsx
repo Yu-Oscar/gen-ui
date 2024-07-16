@@ -8,9 +8,11 @@ import Markdown from "react-markdown";
 import { AssistantStreamEvent } from "openai/resources/beta/assistants/assistants";
 import { RequiredActionFunctionToolCall } from "openai/resources/beta/threads/runs/runs";
 import { LocalContext } from "@/app/shared";
-import { Image, ArrowUp  } from "lucide-react";
+import { Image, ArrowUp } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type MessageProps = {
   role: "user" | "assistant" | "code";
@@ -80,7 +82,6 @@ const CodeChat = ({
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [inputDisabled, setInputDisabled] = useState<boolean>(false);
   const [threadId, setThreadId] = useState<string>("");
-  const [selectedFile, setSelectedFile] = useState<File>();
 
   // automatically scroll to bottom of chat
   const messagesEndRef = useRef<HTMLUListElement | null>(null);
@@ -113,15 +114,18 @@ const CodeChat = ({
         }),
       }
     );
-    if (response.body ){
-      const stream = AssistantStream.fromReadableStream(response.body );
+    if (response.body) {
+      const stream = AssistantStream.fromReadableStream(response.body);
       handleReadableStream(stream);
-    }else { 
-      window.alert ( 'sendMEsage no readable stream')
+    } else {
+      window.alert("sendMEsage no readable stream");
     }
   };
 
-  const submitActionResult = async (runId: string, toolCallOutputs: ToolCallOutput[]) => {
+  const submitActionResult = async (
+    runId: string,
+    toolCallOutputs: ToolCallOutput[]
+  ) => {
     const response = await fetch(
       `/api/assistants/threads/${threadId}/actions`,
       {
@@ -135,11 +139,11 @@ const CodeChat = ({
         }),
       }
     );
-    if (response.body) { 
+    if (response.body) {
       const stream = AssistantStream.fromReadableStream(response.body);
       handleReadableStream(stream);
-    }else { 
-      window.alert ( 'submitActionResult no readable stream')
+    } else {
+      window.alert("submitActionResult no readable stream");
     }
   };
 
@@ -154,6 +158,18 @@ const CodeChat = ({
     setUserInput("");
     setInputDisabled(true);
     scrollToBottom();
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const data = new FormData();
+    if (event.target.files && event.target.files.length > 0) {
+      data.append("file", event.target.files[0]);
+      await fetch("/api/assistants/files", {
+        method: "POST",
+        body: data,
+      });
+      toast.success("Image uploaded");
+    }
   };
 
   /* Stream Event Handlers */
@@ -176,7 +192,7 @@ const CodeChat = ({
   // imageFileDone - show image in chat
   const handleImageFileDone = (image: any) => {
     appendToLastMessage(`\n![${image.file_id}](/api/files/${image.file_id})\n`);
-  }
+  };
 
   // toolCallCreated - log new tool call
   const toolCallCreated = (toolCall: any) => {
@@ -261,61 +277,56 @@ const CodeChat = ({
         ...lastMessage,
       };
       annotations.forEach((annotation: any) => {
-        if (annotation.type === 'file_path') {
+        if (annotation.type === "file_path") {
           updatedLastMessage.text = updatedLastMessage.text.replaceAll(
             annotation.text,
             `/api/files/${annotation.file_path.file_id}`
           );
         }
-      })
+      });
       return [...prevMessages.slice(0, -1), updatedLastMessage];
     });
   };
 
   return (
-<>
-      <LocalContext.Provider value={(value : string ) =>null} >
-          <ul className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar" ref={messagesEndRef}>
-          {messages.map((msg, index) => (
-          <Message key={index} role={msg.role} text={msg.text} />
-        ))}
-          </ul>
-        </LocalContext.Provider>
-      <form
-                className="flex flex-row gap-2 container w-[80%] bg-transparent items-end"
-        onSubmit={handleSubmit}
-        // className={`${styles.inputForm} ${styles.clearfix}`}
-      >
-           <label className="flex items-center cursor-pointer">
-            <Image />
-            <Input
-              disabled={inputDisabled}
-              id="image"
-              type="file"
-              accept="image/*"
-              className="w-0 p-0 m-0"
-              onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  setSelectedFile(e.target.files[0]);
-                }
-              }}
-            />
-          </label>
-                  <div className="w-full">
-        <Input
-            className="rounded-xl"
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          placeholder="Enter your question"
-        />
-        </div>
-        <Button
-        className="rounded-xl"
-          type="submit"
-          disabled={inputDisabled}
+    <>
+      <ToastContainer autoClose={1000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss pauseOnHover theme="dark" />
+      <LocalContext.Provider value={(value: string) => null}>
+        <ul
+          className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar"
+          ref={messagesEndRef}
         >
-            <ArrowUp />
+          {messages.map((msg, index) => (
+            <Message key={index} role={msg.role} text={msg.text} />
+          ))}
+        </ul>
+      </LocalContext.Provider>
+      <form
+        className="flex flex-row gap-2 container w-[80%] bg-transparent items-end"
+        onSubmit={handleSubmit}
+      >
+        <label className="flex items-center cursor-pointer">
+          <Image />
+          <Input
+          type="file"
+          id="file-upload"
+          name="file-upload"
+          multiple
+          className="w-0 p-0 m-0"
+          onChange={handleFileUpload}
+          />
+        </label>
+        <div className="w-full">
+          <Input
+            className="rounded-xl"
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            placeholder="Enter your question"
+          />
+        </div>
+        <Button className="rounded-xl" type="submit" disabled={inputDisabled}>
+          <ArrowUp />
         </Button>
       </form>
     </>
