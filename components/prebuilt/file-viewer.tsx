@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader } from "lucide-react";
 
 const FileViewer = () => {
     const [files, setFiles] = useState([]);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeletingID, setIsDeletingID] = useState(null);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -21,10 +23,27 @@ const FileViewer = () => {
     };
 
     const handleFileDelete = async (fileId) => {
-        await fetch("/api/assistants/files", {
-            method: "DELETE",
-            body: JSON.stringify({ fileId }),
-        });
+        setIsDeleting(true);
+        setIsDeletingID(fileId);
+        try {
+            const response = await fetch("/api/assistants/files", {
+                method: "DELETE",
+                body: JSON.stringify({ fileId }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+            if (response.ok) {
+                setFiles((prevFiles) => prevFiles.filter(file => file.file_id !== fileId));
+            } else {
+                console.error("Failed to delete the file");
+            }
+        } catch (error) {
+            console.error("Error deleting the file:", error);
+        } finally {
+            setIsDeleting(false);
+            setIsDeletingID(null);
+        }
     };
 
     const handleFileUpload = async (event) => {
@@ -49,8 +68,11 @@ const FileViewer = () => {
                                 <span className="overflow-hidden whitespace-nowrap text-ellipsis">{file.filename}</span>
                                 <span className="text-sm text-gray-400">{file.status}</span>
                             </div>
-                            <Trash2 className="h-4 w-4 cursor-pointer" onClick={() => handleFileDelete(file.file_id)}/>
-                            
+                            {isDeleting && isDeletingID === file.file_id ? (
+                                <Loader className="h-4 w-4 animate-spin pointer-events-none"/>
+                            ) : (
+                                <Trash2 className="h-4 w-4 cursor-pointer" onClick={() => handleFileDelete(file.file_id)}/>
+                            )}
                         </div>
                     ))
                 )}
