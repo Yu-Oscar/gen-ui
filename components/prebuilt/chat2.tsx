@@ -289,10 +289,40 @@ const CodeChat = ({
     });
   };
 
+  
+
+  function showToast (type: string, message: string,) {
+    switch (type) {
+      case 'success':
+        toast.success(`${message}`);
+        break;
+      case 'error':
+        toast.error(`${message}`);
+        break;
+      case 'info':
+        toast.info(`${message}`);
+        break;
+      case 'warn':
+        toast.warn(`${message}`);
+        break;
+      default:
+        toast(`${message}`);
+    }
+  }
+
   return (
     <>
-      <ToastContainer autoClose={1000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss pauseOnHover theme="dark" />
-      <FileViewer />
+      <ToastContainer 
+        autoClose={1000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        pauseOnHover
+        theme="dark"
+      />
+      <FileViewer showToast={showToast} />
       
       <LocalContext.Provider value={(value: string) => null}>
         <ul
