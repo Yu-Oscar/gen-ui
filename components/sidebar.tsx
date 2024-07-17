@@ -7,6 +7,7 @@ import { HiOutlinePencilSquare } from "react-icons/hi2";
 import { RiBookReadLine } from "react-icons/ri";
 import { RiOpenaiFill } from "react-icons/ri";
 import { cn } from "@/lib/utils";
+import FileViewer from "./prebuilt/file-viewer";
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);

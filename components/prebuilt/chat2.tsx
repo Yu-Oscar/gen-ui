@@ -13,6 +13,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import FileViewer from "./file-viewer";
 
 type MessageProps = {
   role: "user" | "assistant" | "code";
@@ -291,9 +292,11 @@ const CodeChat = ({
   return (
     <>
       <ToastContainer autoClose={1000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss pauseOnHover theme="dark" />
+      <FileViewer />
+      
       <LocalContext.Provider value={(value: string) => null}>
         <ul
-          className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar"
+          className="flex flex-col w-[80%] gap-1 mt-auto mx-auto overflow-y-auto hide-scrollbar pl-20"
           ref={messagesEndRef}
         >
           {messages.map((msg, index) => (
@@ -302,10 +305,10 @@ const CodeChat = ({
         </ul>
       </LocalContext.Provider>
       <form
-        className="flex flex-row gap-2 container w-[80%] bg-transparent items-end"
+        className="flex flex-row gap-2 container w-[80%] bg-transparent items-end pl-20" 
         onSubmit={handleSubmit}
       >
-        <label className="flex items-center cursor-pointer">
+        {/* <label className="flex items-center cursor-pointer">
           <Image />
           <Input
           type="file"
@@ -315,7 +318,7 @@ const CodeChat = ({
           className="w-0 p-0 m-0"
           onChange={handleFileUpload}
           />
-        </label>
+        </label> */}
         <div className="w-full">
           <Input
             className="rounded-xl"

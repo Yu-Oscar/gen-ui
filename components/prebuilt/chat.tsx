@@ -138,7 +138,7 @@ export default function Chat() {
     }
   }, [ulRef]);
 
-  const [model, setModel] = useState('GPT-4o');
+  const [model, setModel] = useState('code');
 
   return (
     <div className="w-full h-screen max-h-dvh flex flex-col gap-4 mx-auto rounded-lg p-3 shadow-sm">
