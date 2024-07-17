@@ -43,7 +43,7 @@ export default function Chat() {
   const [elements, setElements] = useState<JSX.Element[]>([]);
   const [history, setHistory] = useState<[role: string, content: string][]>([]);
   const [input, setInput] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File>();
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [submitLock, setSubmitLock] = useState(false);
 
   const ulRef = useRef<HTMLUListElement>(null);
@@ -56,27 +56,25 @@ export default function Chat() {
     setSubmitLock(true);
 
     const newElements = [...elements];
-    let base64File: string | undefined = undefined;
-    let fileExtension = selectedFile?.type.split("/")[1];
-    if (selectedFile) {
-      base64File = await convertFileToBase64(selectedFile);
+    let base64Files: { base64: string, extension: string }[] = [];
+    if (selectedFiles.length > 0) {
+      base64Files = await Promise.all(selectedFiles.map(async (file) => {
+        const base64 = await convertFileToBase64(file);
+        return { base64, extension: file.type.split("/")[1] };
+      }));
     }
 
     const element = await actions.agent({
       input,
       chat_history: history,
-      file:
-        base64File && fileExtension
-          ? {
-              base64: base64File,
-              extension: fileExtension,
-            }
-          : undefined,
+      files: base64Files.length > 0 ? base64Files : undefined,
     });
 
     newElements.push(
       <li key={`user-${Date.now()}`}>
-        {selectedFile && <FileUploadMessage file={selectedFile} />}
+        {selectedFiles.map((file, index) => (
+          <FileUploadMessage key={index} file={file} />
+        ))}
         <HumanMessageText content={input} />
       </li>
     );
@@ -117,7 +115,7 @@ export default function Chat() {
 
     setElements(newElements);
     setInput("");
-    setSelectedFile(undefined);
+    setSelectedFiles([]);
   }
 
   useEffect(() => {
@@ -177,18 +175,19 @@ export default function Chat() {
               id="image"
               type="file"
               accept="image/*"
+              multiple
               className="w-0 p-0 m-0"
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
-                  setSelectedFile(e.target.files[0]);
-                  toast.success("Image uploaded");
+                  setSelectedFiles(Array.from(e.target.files));
+                  toast.success("Images uploaded");
                 }
               }}
             />
           </label>
           <div className="w-full">
-          {selectedFile && (
-            <span className="ml-2 text-sm text-gray-500 mb-1">File is selected: {selectedFile.name}</span>
+          {selectedFiles.length > 0 && (
+            <span className="ml-2 text-sm text-gray-500 mb-1">Files selected: {selectedFiles.map(file => file.name).join(", ")}</span>
           )}
           <Input
             placeholder="Enter your question"

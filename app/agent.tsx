@@ -21,44 +21,42 @@ const convertChatHistoryToMessages = (
 function processFile(input: {
   input: string;
   chat_history: [role: string, content: string][];
-  file?: {
+  files?: {
     base64: string;
     extension: string;
-  };
+  }[];
 }) {
-  if (input.file) {
-    const imageTemplate = new HumanMessage({
-      content: [
-        {
-          type: "image_url",
-          image_url: {
-            url: `data:image/${input.file.extension};base64,${input.file.base64}`,
+  const messages = convertChatHistoryToMessages(input.chat_history);
+
+  if (input.files) {
+    input.files.forEach(file => {
+      const imageTemplate = new HumanMessage({
+        content: [
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/${file.extension};base64,${file.base64}`,
+            },
           },
-        },
-      ],
+        ],
+      });
+      messages.push(imageTemplate);
     });
-    return {
-      input: input.input,
-      chat_history: [
-        ...convertChatHistoryToMessages(input.chat_history),
-        imageTemplate,
-      ],
-    };
-  } else {
-    return {
-      input: input.input,
-      chat_history: convertChatHistoryToMessages(input.chat_history),
-    };
   }
+
+  return {
+    input: input.input,
+    chat_history: messages,
+  };
 }
 
 async function agent(inputs: {
   input: string;
   chat_history: [role: string, content: string][];
-  file?: {
+  files?: {
     base64: string;
     extension: string;
-  };
+  }[];
 }) {
   "use server";
   const processedInputs = processFile(inputs);
